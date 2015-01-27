@@ -1,8 +1,11 @@
 import pygame
+import wx
 import random
 import time
 
-
+class PowerUps:
+	def __init__(self):
+		pass
 
 class Bullets:
 	def __init__(self):
@@ -13,6 +16,7 @@ class Bullets:
 		self.rate = 0.1
 		self.size = 2
 		self.distance = 3
+		self.color = [0,255,0]
 		self.last_bullet_t = time.time()
 
 	def shoot(self, coordinates):
@@ -37,25 +41,25 @@ class Bullets:
 			if pos_x_i != -1:
 				split_x_coord = self.pos_x_bullets.pop(pos_x_i)
 				self.split_x(split_x_coord)
-				enemies.reset(i)
+				enemies.remove(i)
 				continue
 			pos_y_i = self.collision(self.pos_y_bullets,v,enemies.get_size())
 			if pos_y_i != -1:
 				split_y_coord = self.pos_y_bullets.pop(pos_y_i)
 				self.split_y(split_y_coord)
-				enemies.reset(i)
+				enemies.remove(i)
 				continue
 			neg_x_i = self.collision(self.neg_x_bullets,v,enemies.get_size())
 			if neg_x_i != -1:
 				split_x_coord = self.neg_x_bullets.pop(neg_x_i)
 				self.split_x(split_x_coord)
-				enemies.reset(i)
+				enemies.remove(i)
 				continue
 			neg_y_i = self.collision(self.neg_y_bullets,v,enemies.get_size())
 			if neg_y_i != -1:
 				split_y_coord = self.neg_y_bullets.pop(neg_y_i)
 				self.split_y(split_y_coord)
-				enemies.reset(i)
+				enemies.remove(i)
 				continue
 			
 	def collision(self, bullets, enemy, variance):
@@ -74,6 +78,9 @@ class Bullets:
 		self.pos_x_bullets.append([coordinates[0],coordinates[1]])
 		self.neg_x_bullets.append([coordinates[0],coordinates[1]])
 
+	def get_rate(self):
+		return self.rate
+		
 	def set_rate(self, value):
 		self.rate = value
 
@@ -115,6 +122,12 @@ class Bullets:
 				total.append(i)
 		return total
 
+	def set_color(self, color):
+		self.color = color
+	
+	def get_color(self):
+		return self.color
+	
 class Enemies:
 	def __init__(self):
 		self.size = 6
@@ -125,7 +138,7 @@ class Enemies:
 		self.enemies = []
 		for i in range(amount):
 			x = random.randrange(0, 600)
-			y = random.randrange(-250, -50)
+			y = random.randrange(-600, -10)
 			self.enemies.append([x, y])
 
 	def get(self):
@@ -157,6 +170,20 @@ class Enemies:
 	def set_rate(self, amount):
 		self.rate = amount
 	
+	def remove(self, index):
+		del self.enemies[index]
+	
+	def set_size(self, size):
+		self.size = size
+		
+	def get_size(self):
+		return self.size
+	
+	def is_empty(self):
+		if len(self.enemies):
+			return False
+		return True
+		
 class Fighter:
 	def __init__(self):
 		self.Fighter = []
@@ -189,41 +216,48 @@ class MousePilot:
 	def __init__(self):
 		self.fighter = Fighter()
 		self.enemies = Enemies()
-		self.enemies.set_amount(100)
 		self.bullets = Bullets()
+		self.level = 1
+		self.shoot_rate = self.bullets.get_rate()
+		self.enemies_created = 200 
+		self.enemies.set_amount(self.enemies_created)
 		self.window_size = [600, 600]
+	
+	def level_up(self):
+		self.enemies_created += self.enemies_created / 5
+		self.enemies.set_amount(self.enemies_created)
+		self.shoot_rate += self.shoot_rate * .3
+		self.bullets.set_rate(self.shoot_rate)
+		self.level += 1
+		print('LEVEL-UP: ' + str(self.level))
 
 	def main_loop(self):
 		pygame.init()
 		screen = pygame.display.set_mode(self.window_size)
-		pygame.display.set_caption("Kamikaze Astronaut")
+		pygame.display.set_caption("Catalyst")
 		clock = pygame.time.Clock()
 		done = False
 		pygame.key.set_repeat(1,1)
 		while not done:
+			if self.enemies.is_empty():
+				self.level_up()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					done = True
-				if event.type == pygame.KEYDOWN:
-					if event.key == pygame.K_SPACE:
+				if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or event.type == pygame.MOUSEBUTTONDOWN:
 						self.bullets.shoot(self.fighter.get())
 			screen.fill([0,0,0])
-			self.fighter.set(pygame.mouse.get_pos())
-			pygame.draw.polygon(screen,[255,255,255],self.fighter.get_coords())
-			pygame.mouse.set_visible(False)
 			self.bullets.impact(self.enemies)
-			for v in self.bullets.get():
-				pygame.draw.circle(screen, [0,255,0], v, self.bullets.get_size())
-			for v in self.enemies.get():
-				pygame.draw.circle(screen, [255,0,0], v, 10)
+			for bullet in self.bullets.get():
+				pygame.draw.circle(screen,self.bullets.get_color(),bullet,self.bullets.get_size())
+			for enemy in self.enemies.get():
+				pygame.draw.circle(screen, [255,0,0], enemy, self.enemies.get_size())
+			self.fighter.set(pygame.mouse.get_pos())
+			pygame.draw.polygon(screen,[255,255,255], self.fighter.get_coords())
+			pygame.mouse.set_visible(False)
 			pygame.display.flip()
 			clock.tick(100)
 		pygame.quit()
 
 Game = MousePilot()
 Game.main_loop()
-
-
-
-
- 
