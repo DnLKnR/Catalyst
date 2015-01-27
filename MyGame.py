@@ -1,18 +1,18 @@
-import pygame
-import random
-import time
-
-
+import pygame, random, time
 
 class Bullet:
-	def __init___(self, coordinates):
-		self.coordinates = coordinates
+	def __init__(self, coordinates):
+		self.coordinates = [coordinates[0],coordinates[1]]
 		self.color = [255,0,255]
 		self.size = 2
-	
-	def get(self):
-		self.coordinates[1] -= 1
+		self.window_size = [600,600]
+		self.done = 0 
+		self.speed = 3
 		
+	def get(self):
+		self.coordinates[1] -= self.speed
+		return self.coordinates
+	
 	def out_of_bounds(self):
 		if self.coordinates[0] > self.window_size[0] and self.coordinates[1] > self.window_size[1]:
 			return True
@@ -24,7 +24,8 @@ class Bullet:
 	def impact(self, coordinates):
 		var_x = abs(coordinates[0] - self.coordinates[0])
 		var_y = abs(coordinates[1] - self.coordinates[1])
-		if var_x < self.size and var_y < self.size:
+		if var_x < self.size + 7 and var_y < self.size + 7:
+			self.done = 1
 			return True
 		else:
 			return False
@@ -41,31 +42,41 @@ class Bullet:
 	def set_size(self, size):
 		self.size = size
 	
-	def redraw(self):
+	def get_speed(self, speed):
+		return self.speed
+	
+	def set_speed(self,speed):
+		self.speed = speed
+	
+	def redraw(self, screen):
 		if self.out_of_bounds():
 			return False
+		elif self.done:
+			return False
 		else:
-			pygame.draw.circle(screen, self.get_color(),self.get(),self.get_size())
+			pygame.draw.circle(screen,self.get_color(),self.get(),self.get_size())
 			return True
 	
 class Explosive:
 	def __init__(self, coordinates):
 		self.coordinates = [coordinates[0],coordinates[1]]
 		self.explosion_rate = 1
-		self.max_explosion_size = 9
+		self.max_explosion_size = 20
 		self.speed = 2
 		self.size = 2
 		self.detonated = 0
 		self.color = [0,255,255]
 		self.done = 0
-
+		self.window_size = [600,600]
+		self.enemy_speed = 1
+				
 	def explode(self):
 		self.detonated = 1
 		
 	def impact(self, coordinates):
 		var_x = abs(coordinates[0] - self.coordinates[0])
 		var_y = abs(coordinates[1] - self.coordinates[1])
-		if var_x < self.size and var_y < self.size:
+		if var_x < self.size + 7 and var_y < self.size + 7:
 			self.explode()
 			return True
 		else:
@@ -76,11 +87,13 @@ class Explosive:
 			self.done = 1
 		elif self.detonated:
 			self.size += self.explosion_rate
+			self.coordinates[1] += self.enemy_speed
 			self.color = [255,255,0]
 		else:
 			self.coordinates[1] -= self.speed
+		return self.coordinates
 	
-	def get_color(self)
+	def get_color(self):
 		return self.color
 	
 	def get_size(self):
@@ -89,10 +102,10 @@ class Explosive:
 	def redraw(self, screen):
 		if self.done:
 			return False
-		elif self.out_of_bounts():
+		elif self.out_of_bounds():
 			return False
 		else:
-			pygame.draw.circle(screen, self.get_color(),self.get(),self.get_size())
+			pygame.draw.circle(screen,self.get_color(),self.get(),self.get_size())
 			return True
 	
 	def out_of_bounds(self):
@@ -105,12 +118,20 @@ class Explosive:
 	
 class Catalyst:
 	def __init__(self, coordinates):
-		self.neg_y_bullets = [coordinates[0],coordinates[1]]
+		self.neg_y_bullets = [[coordinates[0],coordinates[1]]]
 		self.pos_x_bullets = []
 		self.pos_y_bullets = []
 		self.neg_x_bullets = []
 		self.window_size = [600,600]
 		self.color = [0,255,0]
+		self.speed = 3
+		self.size = 2
+	
+	def get_size(self):
+		return self.size
+		
+	def set_size(self, size):
+		self.size = size
 		
 	def get_color(self):
 		return self.color
@@ -118,77 +139,87 @@ class Catalyst:
 	def set_color(self, color):
 		self.color = color
 
-	def split_x(self, coordinates):
+	def split_x(self,coordinates):
 		self.pos_y_bullets.append([coordinates[0],coordinates[1]])
 		self.neg_y_bullets.append([coordinates[0],coordinates[1]])
 		
-	def split_y(self, coordinates):
+	def split_y(self,coordinates):
 		self.pos_x_bullets.append([coordinates[0],coordinates[1]])
 		self.neg_x_bullets.append([coordinates[0],coordinates[1]])
 	
-	def impact(self, coordinates):
-		pos_x_i = self.collision(self.pos_x_bullets,v,enemies.get_size())
+	def impact(self,coordinates):
+		pos_x_i = self.collision(self.pos_x_bullets,coordinates)
 		if pos_x_i != -1:
 			split_x_coord = self.pos_x_bullets.pop(pos_x_i)
 			self.split_x(split_x_coord)
-			return
-		pos_y_i = self.collision(self.pos_y_bullets,v,enemies.get_size())
+			return True
+		pos_y_i = self.collision(self.pos_y_bullets,coordinates)
 		if pos_y_i != -1:
 			split_y_coord = self.pos_y_bullets.pop(pos_y_i)
 			self.split_y(split_y_coord)
-			return
-		neg_x_i = self.collision(self.neg_x_bullets,v,enemies.get_size())
+			return True
+		neg_x_i = self.collision(self.neg_x_bullets,coordinates)
 		if neg_x_i != -1:
 			split_x_coord = self.neg_x_bullets.pop(neg_x_i)
 			self.split_x(split_x_coord)
-			return
-		neg_y_i = self.collision(self.neg_y_bullets,v,enemies.get_size())
+			return True
+		neg_y_i = self.collision(self.neg_y_bullets,coordinates)
 		if neg_y_i != -1:
 			split_y_coord = self.neg_y_bullets.pop(neg_y_i)
 			self.split_y(split_y_coord)
-			return
+			return True
+		return False
 		
-	def redraw(self, screen):
+	def redraw(self,screen):
 		count = 0
-		for catalyst in self.neg_y_bullets:
-			catalyst[1] -= 1
-			if self.out_of_bounds(catalyst):
-				continue
+		for i in range(len(self.neg_y_bullets)-1,-1,-1):
+			self.neg_y_bullets[i][1] -= self.speed
+			if self.out_of_bounds(self.neg_y_bullets[i]):
+				del self.neg_y_bullets[i]
 			else:
-				pygame.draw.circle(screen, self.get_color(), catalyst, self.get_size())
+				pygame.draw.circle(screen, self.get_color(), self.neg_y_bullets[i], self.get_size())
 				count += 1
-		for catalyst in self.pos_x_bullets:
-			catalyst[0] += 1
-			if self.out_of_bounds(catalyst):
-				continue
+		for i in range(len(self.pos_x_bullets)-1,-1,-1):
+			self.pos_x_bullets[i][0] += self.speed
+			if self.out_of_bounds(self.pos_x_bullets[i]):
+				del self.pos_x_bullets[i]
 			else:
-				pygame.draw.circle(screen, self.get_color(), catalyst, self.get_size())
+				pygame.draw.circle(screen, self.get_color(), self.pos_x_bullets[i], self.get_size())
 				count += 1
-		for catalyst in self.pos_y_bullets:
-			catalyst[1] += 1
-			if self.out_of_bounds(catalyst):
-				continue
+		for i in range(len(self.pos_y_bullets)-1,-1,-1):
+			self.pos_y_bullets[i][1] += self.speed
+			if self.out_of_bounds(self.pos_y_bullets[i]):
+				del self.pos_y_bullets[i]
 			else:
-				pygame.draw.circle(screen, self.get_color(), catalyst, self.get_size())
+				pygame.draw.circle(screen, self.get_color(), self.pos_y_bullets[i], self.get_size())
 				count += 1
-		for catalyst in self.neg_x_bullets:
-			catalyst[0] -= 1
-			if self.out_of_bounds(catalyst):
-				continue
+		for i in range(len(self.neg_x_bullets)-1,-1,-1):
+			self.neg_x_bullets[i][0] -= self.speed
+			if self.out_of_bounds(self.neg_x_bullets[i]):
+				del self.neg_x_bullets[i]
 			else:
-				pygame.draw.circle(screen, self.get_color(), catalyst, self.get_size())
+				pygame.draw.circle(screen, self.get_color(), self.neg_x_bullets[i], self.get_size())
 				count += 1
 		if count:
 			return True
-		return False
+		else:
+			return False
 
 	def out_of_bounds(self,coordinates):
-		if coordinates[0] > self.window_size[0] and coordinates[1] > self.window_size[1]:
+		if coordinates[0] > self.window_size[0] or coordinates[1] > self.window_size[1]:
 			return True
-		elif coordinates[0] < 0 and coordinates[1] < 0:
+		elif coordinates[0] < 0 or coordinates[1] < 0:
 			return True
 		else:
 			return False
+	
+	def collision(self,bullets,coordinates):
+		for i in range(0,len(bullets)):
+			var_x = abs(bullets[i][0] - coordinates[0])
+			var_y = abs(bullets[i][1] - coordinates[1])
+			if var_x < self.size + 7 and var_y < self.size + 7:
+				return i
+		return -1
 	
 class PowerUps:
 	def __init__(self):
@@ -219,7 +250,7 @@ class Bullets:
 			return True
 		return False
 
-	def bullet(self, coordinates):
+	def bullet(self,coordinates):
 		if time.time() - self.last_bullet_t > self.rate:
 			bullet = Bullet([coordinates[0],coordinates[1]])
 			self.bullets.append(bullet)
@@ -259,11 +290,10 @@ class Bullets:
 	
 	def redraw(self, screen):
 		for i in range(len(self.bullets)-1,-1,-1):
-			if self.bullet[i].redraw(screen):
+			if self.bullets[i].redraw(screen):
 				continue
 			else:
-				del bullet[i]
-	
+				del self.bullets[i]
 	
 class Enemies:
 	def __init__(self):
@@ -395,7 +425,12 @@ class MousePilot:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					done = True
-				if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or event.type == pygame.MOUSEBUTTONDOWN:
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_SPACE or event.type == pygame.MOUSEBUTTONDOWN:
+						self.bullets.bullet(self.fighter.get())
+					if event.key == pygame.K_v:
+						self.bullets.catalyst(self.fighter.get())
+					if event.key == pygame.K_c:
 						self.bullets.explosive(self.fighter.get())
 			screen.fill([0,0,0])
 			self.bullets.get_hits(self.enemies)
