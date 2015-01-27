@@ -1,4 +1,4 @@
-import pygame, random, time
+import pygame, random, time, os
 	
 class Bullet:
 	def __init__(self, coordinates):
@@ -531,12 +531,64 @@ class GameText:
 		xy = self.center(text,font,self.window_size)
 		level_up = font.render(text,1,color)
 		self.screen.blit(level_up,xy)
+
+class Sound:
+	def __init__(self):
+		pygame.mixer.init()
+		self.music = []
+		self.is_mute = 0
+		self.timer = 0
+		self.index = 0
+		loaded = []
+		maindir = os.getcwd().replace('\\','/')
+		maindir += '/Music/'
+		for file in os.listdir(maindir):
+			if '.wav' in file:
+				if file in loaded:
+					continue
+				loaded.append(file)
+				self.music.append(pygame.mixer.Sound('Music/' + file))
+		
+	def play(self):
+		if len(self.music):
+			self.music[self.index].play(-1,0,1000)
+			self.timer = time.time()
+	
+	def next(self):
+		if not self.is_empty() and abs(self.timer - time.time()) > 1:
+			self.stop()
+			self.index += 1
+			if self.index == len(self.music):
+				self.index = 0
+			self.play()
+			self.timer = time.time()
+	
+	def stop(self):
+		self.music[self.index].stop()
+	
+	def mute(self):
+		if not self.is_empty() and abs(self.timer - time.time()) > 1:
+			self.timer = time.time()
+			if self.is_mute:
+				self.is_mute = 0
+				self.music[self.index].set_volume(1.0)
+			else:
+				self.is_mute = 1
+				self.music[self.index].set_volume(0.0)
+	
+	def is_empty(self):
+		if len(self.music):
+			return True
+		else:
+			return False
 	
 class Game:
 	def __init__(self):
 		self.fighter = Fighter()
 		self.enemies = Enemies()
 		self.bullets = Bullets()
+		self.music = Sound()
+		self.music.play()
 		self.level = 1
 		self.shoot_rate = self.bullets.get_rate()
 		self.enemies_created = 1000
@@ -590,6 +642,10 @@ class Game:
 						self.bullets.catalyst(self.fighter.get())
 					if event.key == pygame.K_c:
 						self.bullets.explosive(self.fighter.get())
+					if event.key == pygame.K_x:
+						self.music.next()
+					if event.key == pygame.K_m:
+						self.music.mute()
 			self.screen.fill([0,0,0])
 			total_hits = self.bullets.get_hits(self.enemies)
 			self.score -= total_hits * 100
@@ -607,7 +663,6 @@ class Game:
 			self.score += 5
 			self.clock.tick(100)
 		if self.game_over:
-			
 			self.gameover()
 		else:
 			pygame.quit()
@@ -641,6 +696,10 @@ class Game:
 					elif event.key == pygame.K_ESCAPE:
 						quit = True
 						break
+					if event.key == pygame.K_m:
+						self.music.mute()
+					if event.key == pygame.K_x:
+						self.music.next()
 		if done:
 			self.main_loop()
 		else:
@@ -669,9 +728,13 @@ class Game:
 					if event.key == pygame.K_SPACE:
 						ready = True
 						break
-					elif event.key == pygame.K_ESCAPE:
+					if event.key == pygame.K_ESCAPE:
 						quit = True
 						break
+					if event.key == pygame.K_x:
+						self.music.next()
+					if event.key == pygame.K_m:
+						self.music.mute()
 		if ready:
 			self.main_loop()
 		else:
