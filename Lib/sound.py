@@ -1,5 +1,4 @@
 import os, pygame
-__all__ = ["Sound"]
 
 
 class Sound:
