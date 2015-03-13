@@ -8,7 +8,10 @@ class Bullet:
 		self.window_size = [600,600]
 		self.done = 0 
 		self.speed = 3
-		
+	
+	def set_window_size(self,x,y):
+		self.window_size = [x,y]
+	
 	def get(self):
 		self.coordinates[1] -= self.speed
 		return self.coordinates
