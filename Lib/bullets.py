@@ -9,6 +9,7 @@ class Bullets:
 		self.distance = 3
 		self.color = [0,255,0]
 		self.last_bullet_t = time.time()
+		self.window_size = [600,600]
 
 	def catalyst(self,coordinates):
 		if time.time() - self.last_bullet_t > self.rate:
@@ -31,6 +32,11 @@ class Bullets:
 			bullet = Bullet([coordinates[0],coordinates[1]])
 			self.bullets.append(bullet)
 			self.last_bullet_t = time.time()
+	
+	def set_window_size(self,x,y):
+		self.window_size = [x,y]
+		for ammo in self.bullets:
+			ammo.set_window_size(x,y)
 	
 	def get_rate(self):
 		return self.rate
@@ -56,7 +62,7 @@ class Bullets:
 	def out_of_bounds(self, bullets):
 		total = []
 		for i,v in enumerate(bullets):
-			if v[0] > 600 or v[1] > 600:
+			if v[0] > self.window_size[0] or v[1] > self.window_size[1]:
 				total.append(i)
 			elif v[0] < 0 or v[1] < 0:
 				total.append(i)
