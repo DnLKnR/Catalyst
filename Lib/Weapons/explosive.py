@@ -15,7 +15,10 @@ class Explosive:
 				
 	def explode(self):
 		self.detonated = 1
-		
+	
+	def set_window_size(self,x,y):
+		self.window_size = [x,y]
+	
 	def impact(self, coordinates, enemy_size):
 		if self.coordinates[1] < -5:
 			return False
