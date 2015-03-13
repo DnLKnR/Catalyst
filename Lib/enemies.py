@@ -7,11 +7,17 @@ class Enemies:
 		self.size = 6
 		self.rate = 1
 		self.enemies = []
-
+		self.window_size = [600,600]
+	
+	def set_window_size(self,x,y):
+		self.window_size = [x,y]
+		for enemy in self.enemies:
+			enemy.set_window_size(x,y)
+	
 	def set_amount(self, amount):
 		self.enemies = []
 		for i in range(int(amount)):
-			x = random.randrange(0, 600)
+			x = random.randrange(0, self.window_size[0])
 			y = random.randrange(-3000, -50)
 			enemy = Enemy([x,y])
 			enemy.set_color([random.randrange(100,255),random.randrange(0,255),random.randrange(0,255)])
