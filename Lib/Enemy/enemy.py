@@ -6,6 +6,7 @@ class Enemy:
 		self.color = [255,50,50]
 		self.rate = 1
 		self.size = 7
+		self.window_size = [600,600]
 		
 	def set_rate(self, rate):
 		self.rate = rate
@@ -25,18 +26,21 @@ class Enemy:
 	def get_color(self):
 		return self.color
 	
+	def set_window_size(self, x, y):
+		self.window_size = [x,y]
+	
 	def get(self):
 		self.coordinates[1] += self.rate
-		if self.coordinates[1] > 600: 
-			return self.reset()
+		if self.coordinates[1] > self.window_size[1]: 
+			return self.reset(self.window_size[0])
 		else: 
 			return self.coordinates
 	
 	def get_coord(self):
 		return self.coordinates
 	
-	def reset(self):
-		x = random.randrange(0,600)
+	def reset(self,x_max):
+		x = random.randrange(0,x_max)
 		y = random.randrange(-3000,-50)
 		self.coordinates = [x,y]
 		return self.coordinates
