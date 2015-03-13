@@ -11,6 +11,9 @@ class Catalyst:
 		self.speed = 3
 		self.size = 2
 	
+	def set_window_size(self,x,y):
+		self.window_size = [x,y]
+	
 	def get_size(self):
 		return self.size
 		
