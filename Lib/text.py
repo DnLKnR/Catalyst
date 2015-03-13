@@ -6,6 +6,9 @@ class GameText:
 		self.color = [255,255,255]
 		self.screen = screen
 	
+	def set_window_size(self,x,y):
+		self.window_size = [x,y]
+	
 	def upper_left(self,text='',font='',window_size=[0,0]):
 		return [0,0]
 		
