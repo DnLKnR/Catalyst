@@ -23,7 +23,7 @@ class Main:
 		self.text = GameText(self.screen)
 		pygame.init()
 		self.clock = pygame.time.Clock()
-		
+	
 	def level_up(self):
 		self.enemies_created += self.enemies_created / 5
 		self.enemies.set_amount(self.enemies_created)
@@ -58,6 +58,13 @@ class Main:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					done = True
+				if event.type == VIDEORESIZE:
+					self.window_size = event.dict['size']
+					print(self.window_size)
+					screen=pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
+					pygame.display.flip()
+					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
+					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_b or event.type == pygame.MOUSEBUTTONDOWN:
 			 			self.bullets.bullet(self.fighter.get())
@@ -84,7 +91,7 @@ class Main:
 			pygame.display.flip()
 			self.last_surface = self.screen.copy()
 			self.score += 5
-			self.clock.tick(100)
+			self.clock.tick(1000)
 		if self.game_over:
 			self.gameover()
 		else:
