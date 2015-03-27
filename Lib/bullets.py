@@ -32,6 +32,8 @@ class Bullets:
 			bullet = Bullet([coordinates[0],coordinates[1]])
 			self.bullets.append(bullet)
 			self.last_bullet_t = time.time()
+			return True
+		return False
 	
 	def set_window_size(self,x,y):
 		self.window_size = [x,y]

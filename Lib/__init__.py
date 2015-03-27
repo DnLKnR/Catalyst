@@ -1,4 +1,5 @@
 import pygame,time
+from pygame.locals import *
 from Lib.fighter import Fighter
 from Lib.enemies import Enemies
 from Lib.bullets import Bullets
@@ -17,7 +18,7 @@ class Main:
 		self.enemies_created = 1000
 		self.enemies.set_amount(self.enemies_created)
 		self.window_size = [600, 600]
-		self.screen = pygame.display.set_mode(self.window_size,16)
+		self.screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
 		self.reset_screen = self.screen
 		pygame.display.set_caption("")
 		self.text = GameText(self.screen)
@@ -59,12 +60,13 @@ class Main:
 				if event.type == pygame.QUIT:
 					done = True
 				if event.type == VIDEORESIZE:
-					self.window_size = event.dict['size']
+					self.window_size = [event.w,event.h]
 					print(self.window_size)
-					screen=pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
-					pygame.display.flip()
+					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
 					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
 					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
+					self.text.set_window_size(self.window_size[0],self.window_size[1])
+					pygame.display.flip()
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_b or event.type == pygame.MOUSEBUTTONDOWN:
 			 			self.bullets.bullet(self.fighter.get())
@@ -119,6 +121,14 @@ class Main:
 				if event.type == pygame.QUIT:
 					quit = True
 					break
+				if event.type == VIDEORESIZE:
+					self.window_size = [event.w,event.h]
+					print(self.window_size)
+					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
+					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
+					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
+					self.text.set_window_size(self.window_size[0],self.window_size[1])
+					pygame.display.flip()
 				elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
 					if event.key == pygame.K_SPACE:
 						done = True
@@ -154,6 +164,14 @@ class Main:
 				if event.type == pygame.QUIT:
 					quit = True
 					break
+				if event.type == VIDEORESIZE:
+					self.window_size = [event.w,event.h]
+					print(self.window_size)
+					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
+					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
+					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
+					self.text.set_window_size(self.window_size[0],self.window_size[1])
+					pygame.display.flip()
 				elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
 					if event.key == pygame.K_SPACE:
 						ready = True
