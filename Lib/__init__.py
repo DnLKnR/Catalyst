@@ -40,8 +40,7 @@ class Main:
 		self.screen = self.reset_screen
 		self.enemies.set_amount(self.enemies_created)
 		self.shoot_rate = .2
-		self.game_over = 0
-		self.score = 0
+		self.score,self.game_over = 0
 		self.bullets.set_rate(self.shoot_rate)
 		self.bullets.reset()
 		self.level = 1
@@ -78,6 +77,8 @@ class Main:
 						self.music.next()
 					if event.key == pygame.K_m:
 						self.music.mute()
+					if event.key == pygame.K_ESCAPE:
+						self.pause_screen()
 			self.screen.fill([0,0,0])
 			total_hits = self.bullets.get_hits(self.enemies)
 			self.score -= total_hits * 100
@@ -100,8 +101,7 @@ class Main:
 			pygame.quit()
 		
 	def gameover(self):
-		done = False
-		quit = False
+		quit,done = False
 		colors = [[255,0,0],[0,255,0],[0,0,255],[255,255,0]]
 		i = 0
 		while not done and not quit:
@@ -147,9 +147,7 @@ class Main:
 	
 	def start_screen(self):
 		self.reset()
-		ready = 0
-		quit = 0
-		i = 0
+		ready,quit,i = 0
 		while not ready and not quit:
 			self.screen.fill([0,0,0])
 			i += 1
@@ -166,7 +164,6 @@ class Main:
 					break
 				if event.type == VIDEORESIZE:
 					self.window_size = [event.w,event.h]
-					print(self.window_size)
 					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
 					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
 					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
@@ -185,5 +182,40 @@ class Main:
 						self.music.mute()
 		if ready:
 			self.main_loop()
+		else:
+			pygame.quit()
+	
+	def pause_screen(self):
+		ready,quit,i = 0
+		while not ready and not quit:
+			self.screen.fill([0,0,0])
+			self.text.continue_screen([55,255,55],i)
+			pygame.display.flip()
+			self.clock.tick(2)
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					quit = True
+					break
+				if event.type == VIDEORESIZE:
+					self.window_size = [event.w,event.h]
+					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
+					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
+					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
+					self.text.set_window_size(self.window_size[0],self.window_size[1])
+					pygame.display.flip()
+				elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+					if event.key == pygame.K_SPACE:
+						ready = True
+						break
+					if event.key == pygame.K_DOWN:
+						if i: i = 0
+						else: i += 1
+						break
+					if event.key == pygame.K_UP:
+						if i: i -= 1
+						else: i = 1
+						break
+		if ready:
+			return
 		else:
 			pygame.quit()

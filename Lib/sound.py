@@ -12,7 +12,7 @@ class Sound:
 		maindir = os.getcwd().replace('\\','/')
 		maindir += '/Lib/Music/'
 		for file in os.listdir(maindir):
-			if '.wav' in file:
+			if '.wav' in file or '.mp3' in file:
 				if file in loaded:
 					continue
 				loaded.append(file)

@@ -20,7 +20,9 @@ class Enemies:
 			x = random.randrange(0, self.window_size[0])
 			y = random.randrange(-3000, -50)
 			enemy = Enemy([x,y])
-			enemy.set_color([random.randrange(100,255),random.randrange(0,255),random.randrange(0,255)])
+			enemy.set_color([random.randrange(100,255),
+							random.randrange(0,255),
+							random.randrange(0,255)])
 			enemy.set_rate(random.randrange(1,4))
 			enemy.set_size(random.randrange(4,10) * 2)
 			self.enemies.append(enemy)
