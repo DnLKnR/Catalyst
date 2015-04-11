@@ -40,7 +40,7 @@ class Main:
 		self.screen = self.reset_screen
 		self.enemies.set_amount(self.enemies_created)
 		self.shoot_rate = .2
-		self.score,self.game_over = 0
+		self.score,self.game_over = [0,0]
 		self.bullets.set_rate(self.shoot_rate)
 		self.bullets.reset()
 		self.level = 1
@@ -101,7 +101,7 @@ class Main:
 			pygame.quit()
 		
 	def gameover(self):
-		quit,done = False
+		quit,done = [False,False]
 		colors = [[255,0,0],[0,255,0],[0,0,255],[255,255,0]]
 		i = 0
 		while not done and not quit:
@@ -147,7 +147,7 @@ class Main:
 	
 	def start_screen(self):
 		self.reset()
-		ready,quit,i = 0
+		ready,quit,i = [0,0,0]
 		while not ready and not quit:
 			self.screen.fill([0,0,0])
 			i += 1
@@ -186,7 +186,7 @@ class Main:
 			pygame.quit()
 	
 	def pause_screen(self):
-		ready,quit,i = 0
+		ready,quit,i = [0,0,0]
 		while not ready and not quit:
 			self.screen.fill([0,0,0])
 			self.text.continue_screen([55,255,55],i)

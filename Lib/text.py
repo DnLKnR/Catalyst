@@ -70,23 +70,24 @@ class GameText:
 		font = pygame.font.SysFont("monotype", 20, bold=True)
 		text = "Game Paused"
 		pause_menu = font.render(text, 1, color)
-		
 		#Get the center 
-		x = self.center_x(text,font,self.window_size)
-		y = self.center_y(text,font,self.window_size)
-		
+		x1 = self.center_x(text,font,self.window_size)
+		y1 = self.center_y(text,font,self.window_size)
+		self.screen.blit(pause_menu,[x1,y1/2])
 		#Set a different color for the hovered options
 		colors = [color,color]
 		colors[option] = [255-color[0],255-color[1],255-color[2]]
 		font2 = pygame.font.SysFont("monotype", 15, bold=False)
 		option_txt = ["Resume","Quit"]
-		option = [font.render(option_txt[0], 1, color[0]),
-					font.render(option_txt[1], 1, color[1])]
-		
-		#Draw items on the screen
-		self.screen.blit(pause_menu,[x/2,y])
-		self.screen.blit(option[0], [x,y])
-		self.screen.blit(option[1], [3 * x/2,y])	
+		option = [font.render(option_txt[0], 1, colors[0]),
+					font.render(option_txt[1], 1, colors[1])]
+		x2 = self.center_x(option_txt[0],font,self.window_size)
+		y2 = self.center_y(option_txt[0],font,self.window_size)
+		x3 = self.center_x(option_txt[1],font,self.window_size)
+		y3 = self.center_y(option_txt[1],font,self.window_size)
+		#Draw options on the screen
+		self.screen.blit(option[0], [x2,5 * y2/6])
+		self.screen.blit(option[1], [x3,y3])	
 	
 	def gameover_text(self, color):
 		font = pygame.font.SysFont("monotype", 70, bold=True)
