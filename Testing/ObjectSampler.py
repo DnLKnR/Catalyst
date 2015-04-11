@@ -5,11 +5,11 @@ import pygame
 def draw_circle_in_circle(screen, color, coordinates, width):
 	pygame.draw.circle(screen, color, coordinates, width)
 	negative_color = [255 - color[0], 255 - color[1], 255 - color[2]]
-	pygame.draw.circle(screen, negative_color, coordinates, width/2)
+	pygame.draw.circle(screen, negative_color, coordinates, width//2)
 
 def draw_saucer_with_cannon(screen, color, coordinates, length, width):
 	end_coordinates = [coordinates[0]-1,coordinates[1]-length]
-	pygame.draw.line(screen, [0,255,0], coordinates, end_coordinates, width/2)
+	pygame.draw.line(screen, [0,255,0], coordinates, end_coordinates, width//2)
 	draw_circle_in_circle(screen, color, coordinates, width)
 
 
