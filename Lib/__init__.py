@@ -204,9 +204,6 @@ class Main:
 					self.text.set_window_size(self.window_size[0],self.window_size[1])
 					pygame.display.flip()
 				elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-					if event.key == pygame.K_SPACE:
-						ready = True
-						break
 					if event.key == pygame.K_DOWN:
 						if i: i = 0
 						else: i += 1
@@ -215,7 +212,11 @@ class Main:
 						if i: i -= 1
 						else: i = 1
 						break
+					if event.key == pygame.K_RETURN:
+						if i: quit = True
+						else: ready = True
+						
 		if ready:
 			return
 		else:
-			pygame.quit()
+			self.start_screen()
