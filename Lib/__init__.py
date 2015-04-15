@@ -120,15 +120,20 @@ class Main:
 			#Redraw the bullets, set the fighter, and calculate/redraw the enemies
 			self.bullets.redraw(self.screen)
 			self.fighter.set(pygame.mouse.get_pos())
-			for enemy in self.enemies.get():
+			
+			#loop through the enemy list in reverse so they can be deleted on-the-fly if need be
+			index = self.enemies.last_index()
+			for enemy in reversed(self.enemies.get()):
 				#If fighter coordinates overlapped with enemy, the enemy dies.
 				if self.fighter.hit(enemy.get_coord(),enemy.get_size()):
-					self.score -= 100
-					#TO DO: REMOVE THE ENEMY
-					
+					self.score -= 1000
+					#enemy destroyed, Remove the enemy. 
+					self.enemies.remove(index)
 				#Otherwise, redraw that enemy on the screen
 				else:
 					enemy.redraw(self.screen)
+				#Decrement index
+				index -= 1
 					
 			#Draw the fighter on the screen, update the score text, and flip the display (draws the new items)
 			pygame.draw.polygon(self.screen,self.fighter.get_color(), self.fighter.get_coords())

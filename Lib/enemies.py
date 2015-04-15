@@ -49,7 +49,10 @@ class Enemies:
 	
 	def get_color(self):
 		return self.color
-
+	
+	def last_index(self):
+		return len(self.enemies) - 1
+	
 	def is_empty(self):
 		if len(self.enemies):
 			return False
