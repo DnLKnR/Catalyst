@@ -30,6 +30,7 @@ class Enemy:
 		self.window_size = [x,y]
 	
 	def get(self):
+		#Compute the new position and return the coordinates
 		self.coordinates[1] += self.rate
 		if self.coordinates[1] > self.window_size[1]: 
 			return self.reset(self.window_size[0])
@@ -40,6 +41,7 @@ class Enemy:
 		return self.coordinates
 	
 	def reset(self,x_max):
+		#Reset the enemy position
 		x = random.randrange(0,x_max)
 		y = random.randrange(-3000,-50)
 		self.coordinates = [x,y]

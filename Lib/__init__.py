@@ -26,6 +26,7 @@ class Main:
 		self.clock = pygame.time.Clock()
 	
 	def level_up(self):
+		'''Level up and alter elements in the game accordingly'''
 		self.enemies_created += self.enemies_created / 5
 		self.enemies.set_amount(self.enemies_created)
 		self.shoot_rate += self.shoot_rate * .3
@@ -36,6 +37,7 @@ class Main:
 		time.sleep(1)
 		
 	def reset(self):
+		'''Reset the game'''
 		self.enemies_created = 100
 		self.screen = self.reset_screen
 		self.enemies.set_amount(self.enemies_created)
@@ -45,68 +47,153 @@ class Main:
 		self.bullets.reset()
 		self.level = 1
 
+	def resize(self,event):
+		'''Resize the inner window elements'''
+		self.window_size = [event.w,event.h]
+		screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
+		self.bullets.set_window_size(self.window_size[0],self.window_size[1])
+		self.enemies.set_window_size(self.window_size[0],self.window_size[1])
+		self.text.set_window_size(self.window_size[0],self.window_size[1])
+		pygame.display.flip()
+		
 	def main_loop(self):
 		self.reset()
-		done = False
+		[exit,self.game_over,total_hits] = [False,False,0]
 		pygame.key.set_repeat(1,1)
-		total_hits = 0
-		while not done and not self.game_over:
-			if self.score > 1 and self.score % 5000 == 0:
+		while True not in [exit,self.game_over]:
+		
+			#Score is high enough to increase a level
+			if self.score > 1 and self.score % (self.level * 5000) == 0:
 				self.level_up()
-			elif self.score < 0:
-				self.gameover()
+				
+			#Score has dropped below the threshhold for the current level, player looses
+			elif self.score < (self.level - 1) * 5000:
+				self.game_over = True
+				break
+			
+			#Event evaulation loop
 			for event in pygame.event.get():
+				#If player hit 'X' on window, end the game 
 				if event.type == pygame.QUIT:
-					done = True
-				if event.type == VIDEORESIZE:
-					self.window_size = [event.w,event.h]
-					print(self.window_size)
-					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
-					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
-					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
-					self.text.set_window_size(self.window_size[0],self.window_size[1])
-					pygame.display.flip()
-				if event.type == pygame.KEYDOWN:
+					exit = True
+					break
+					
+				#If the event is a window resizing, resize the inner elements as well
+				elif event.type == VIDEORESIZE:
+					self.resize(event)
+					
+				#Key/Mouse events
+				elif event.type == pygame.KEYDOWN:
+					#Regular bullets shoot when 'B' or a mouse button is clicked
 					if event.key == pygame.K_b or event.type == pygame.MOUSEBUTTONDOWN:
 			 			self.bullets.bullet(self.fighter.get())
-					if event.key == pygame.K_v:
+						
+					#Catalyst bullets shoot when 'V' is pressed
+					elif event.key == pygame.K_v:
 						self.bullets.catalyst(self.fighter.get())
-					if event.key == pygame.K_c:
+						
+					#Explosive bullets shoot when 'C' is pressed
+					elif event.key == pygame.K_c:
 						self.bullets.explosive(self.fighter.get())
-					if event.key == pygame.K_x:
+						
+					#Switch to next song when 'X' is pressed
+					elif event.key == pygame.K_x:
 						self.music.next()
-					if event.key == pygame.K_m:
+						
+					#Mute the song when 'M' is pressed
+					elif event.key == pygame.K_m:
 						self.music.mute()
-					if event.key == pygame.K_ESCAPE:
+						
+					#Go to pause menu loop if 'ESC' is pressed
+					elif event.key == pygame.K_ESCAPE:
 						self.pause_screen()
+						
+			#Draw a black background over the screen
 			self.screen.fill([0,0,0])
+			
+			#Get the total hits by bullets on the enemies
 			total_hits = self.bullets.get_hits(self.enemies)
+			
+			#Subtract of the total hits off the current running score
 			self.score -= total_hits * 100
+			
+			#Redraw the bullets, set the fighter, and calculate/redraw the enemies
 			self.bullets.redraw(self.screen)
 			self.fighter.set(pygame.mouse.get_pos())
 			for enemy in self.enemies.get():
+				#If fighter coordinates overlapped with enemy, the enemy dies.
 				if self.fighter.hit(enemy.get_coord(),enemy.get_size()):
-					self.game_over = 1
-				enemy.redraw(self.screen)
+					self.score -= 100
+					#TO DO: REMOVE THE ENEMY
+					
+				#Otherwise, redraw that enemy on the screen
+				else:
+					enemy.redraw(self.screen)
+					
+			#Draw the fighter on the screen, update the score text, and flip the display (draws the new items)
 			pygame.draw.polygon(self.screen,self.fighter.get_color(), self.fighter.get_coords())
 			self.text.display_score(self.score,[255,255,255])
 			pygame.mouse.set_visible(False)
 			pygame.display.flip()
+			
+			#Store the current surface
 			self.last_surface = self.screen.copy()
+			
+			#Add to the current running score
 			self.score += 5
+			
+			#Timer for when to repeat the loop
 			self.clock.tick(1000)
+			
+		#Loop ended due to game over
 		if self.game_over:
 			self.gameover()
+		#Loop ended due to player closing game
 		else:
 			pygame.quit()
-		
+	
+	def event_handler(self,event,phase):
+		#return in form of [ready,quit]
+		if phase in ["start","gameover"]:
+			if event.type == pygame.QUIT:
+					return [False,True]
+			elif event.type == VIDEORESIZE:
+				self.resize(event)
+			elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+				if event.key == pygame.K_SPACE:
+					return [True,False]
+				elif event.key == pygame.K_ESCAPE:
+					return [False,True]
+				elif event.key == pygame.K_m:
+					self.music.mute()
+				elif event.key == pygame.K_x:
+					self.music.next()
+			return [False,False]
+			
+		#returns in form of [ready,quit,j]
+		elif phase == "pause":
+			if event.type == pygame.QUIT:
+				return [False,True,0]
+			elif event.type == VIDEORESIZE:
+				self.resize(event)
+			elif event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_DOWN:
+					return [False,False,1]
+				elif event.key == pygame.K_UP:
+					return [False,False,-1]
+				elif event.key == pygame.K_RETURN:
+					return [True,True,0]
+			return [False,False,0]
+					
 	def gameover(self):
-		quit,done = [False,False]
+		ready,quit,i = [False,False,0]
 		colors = [[255,0,0],[0,255,0],[0,0,255],[255,255,0]]
-		i = 0
-		while not done and not quit:
+		pygame.mouse.set_visible(True)
+		while True not in [ready, quit]:
 			self.screen.fill([0,0,0])
+			#Use the moment of game over screen as background
 			self.screen.blit(self.last_surface,[0,0])
+			#variable i is used to cause a rotation of colors and blinking effects on text
 			if i < 3:
 				i += 1
 				if i % 2 == 1:
@@ -114,109 +201,73 @@ class Main:
 			else: 
 				i = 0	
 			self.text.gameover_text(colors[i])
-			pygame.mouse.set_visible(True)
-			pygame.display.flip()
-			self.clock.tick(2)
+			
+			#Event loop
 			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					quit = True
+				#Call the event handler
+				[ready,quit] = self.event_handler(event,"gameover")
+				if ready or quit:
 					break
-				if event.type == VIDEORESIZE:
-					self.window_size = [event.w,event.h]
-					print(self.window_size)
-					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
-					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
-					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
-					self.text.set_window_size(self.window_size[0],self.window_size[1])
-					pygame.display.flip()
-				elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-					if event.key == pygame.K_SPACE:
-						done = True
-						break
-					elif event.key == pygame.K_ESCAPE:
-						quit = True
-						break
-					if event.key == pygame.K_m:
-						self.music.mute()
-					if event.key == pygame.K_x:
-						self.music.next()
-		if done:
+				
+			#Draw the new screen
+			pygame.display.flip()
+			#sleep timer before looping again
+			self.clock.tick(2)	
+		
+		if ready:
 			self.main_loop()
 		else:
 			self.start_screen()
 	
 	def start_screen(self):
+		ready,quit,i = [False,False,0]
+		
+		#Reset game elements
 		self.reset()
-		ready,quit,i = [0,0,0]
-		while not ready and not quit:
+		pygame.mouse.set_visible(True)
+		
+		#start screen loop
+		while True not in [ready, quit]:
 			self.screen.fill([0,0,0])
+			#variable i is used to cause a blinking effect on the text
 			i += 1
 			if i % 2 == 1: 
 				self.text.start_text([255,255,255])
 				i = -1
 			self.text.title_text([55,255,55])
-			pygame.mouse.set_visible(True)
-			pygame.display.flip()
-			self.clock.tick(2)
+			
+			#Event loop
 			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					quit = True
+				[ready,quit] = self.event_handler(event,"start")
+				if ready or quit:
 					break
-				if event.type == VIDEORESIZE:
-					self.window_size = [event.w,event.h]
-					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
-					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
-					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
-					self.text.set_window_size(self.window_size[0],self.window_size[1])
-					pygame.display.flip()
-				elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-					if event.key == pygame.K_SPACE:
-						ready = True
-						break
-					if event.key == pygame.K_ESCAPE:
-						quit = True
-						break
-					if event.key == pygame.K_x:
-						self.music.next()
-					if event.key == pygame.K_m:
-						self.music.mute()
+			
+			#refresh the screen
+			pygame.display.flip()
+			
+			#sleep timer for loop
+			self.clock.tick(2)
+			
 		if ready:
 			self.main_loop()
 		else:
 			pygame.quit()
 	
 	def pause_screen(self):
-		ready,quit,i = [0,0,0]
-		while not ready and not quit:
+		ready,quit,i,j = [False,False,0,0]
+		while True not in [ready,quit]:
 			self.screen.fill([0,0,0])
 			self.text.continue_screen([55,255,55],i)
 			pygame.display.flip()
-			self.clock.tick(2)
+			self.clock.tick(10)
 			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					quit = True
-					break
-				if event.type == VIDEORESIZE:
-					self.window_size = [event.w,event.h]
-					screen = pygame.display.set_mode(self.window_size,HWSURFACE|DOUBLEBUF|RESIZABLE)
-					self.bullets.set_window_size(self.window_size[0],self.window_size[1])
-					self.enemies.set_window_size(self.window_size[0],self.window_size[1])
-					self.text.set_window_size(self.window_size[0],self.window_size[1])
-					pygame.display.flip()
-				elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-					if event.key == pygame.K_DOWN:
-						if i: i = 0
-						else: i += 1
-						break
-					if event.key == pygame.K_UP:
-						if i: i -= 1
-						else: i = 1
-						break
-					if event.key == pygame.K_RETURN:
-						if i: quit = True
-						else: ready = True
-						
-		if ready:
-			return
-		else:
+				[ready,quit,j] = self.event_handler(event,"pause")
+				if ready and quit: 
+					if i: ready = False
+					else: quit = False
+				i += j
+				if i < 0: i = 1
+				elif i > 1: i = 0
+		if quit:
 			self.start_screen()
+		

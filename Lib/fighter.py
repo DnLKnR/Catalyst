@@ -5,6 +5,7 @@ class Fighter:
 		self.color = [255,255,255]
 		
 	def get_coords(self):
+		#Creates the rectangular coordinates for the fighter
 		top_left = (self.Fighter[0] - self.size, self.Fighter[1] - self.size)
 		top_right = (self.Fighter[0] + self.size, self.Fighter[1] - self.size)
 		bottom_left = (self.Fighter[0] - self.size, self.Fighter[1] + self.size)
@@ -30,6 +31,7 @@ class Fighter:
 		return self.Fighter
 	
 	def hit(self, coordinates, object_size):
+		#calculates if the fighter was hit
 		var_x = abs(self.Fighter[0] - coordinates[0])
 		var_y = abs(self.Fighter[1] - coordinates[1])
 		if var_x < self.size + object_size and var_y < self.size + object_size:
