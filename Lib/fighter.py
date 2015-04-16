@@ -30,12 +30,14 @@ class Fighter:
 	def get(self):
 		return self.Fighter
 	
-	def hit(self, coordinates, object_size):
-		#calculates if the fighter was hit
-		var_x = abs(self.Fighter[0] - coordinates[0])
-		var_y = abs(self.Fighter[1] - coordinates[1])
-		if var_x < self.size + object_size and var_y < self.size + object_size:
-			return True
-		else:
-			return False
-
+	def hit(self, center, radius):
+		'''Computes if the fighter is within 
+			contact range of the circular enemy'''
+		coords = self.get_coords()
+		r = radius ** 2
+		for coord in coords:
+			d =  (coord[0] - center[0]) ** 2 + (coord[1] - center[1]) ** 2
+			if d < r: 
+				return True
+		return False
+		
