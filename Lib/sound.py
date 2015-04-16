@@ -1,4 +1,4 @@
-import os, pygame
+import os, pygame, time
 
 
 class Sound:
